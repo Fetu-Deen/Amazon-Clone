@@ -1,7 +1,12 @@
 import "./App.css";
+import Header from "./Components/Header/Header";
 
 function App() {
-  return <>Amazon Clone</>;
+  return (
+    <>
+      <Header />
+    </>
+  );
 }
 
 export default App;
