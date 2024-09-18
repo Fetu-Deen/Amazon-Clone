@@ -58,6 +58,7 @@
 
 .search select {
     border: none;
+    /* color: rgb(96, 87, 87); */
 }
 
 .search input {
@@ -124,7 +125,7 @@
     font-size: 20px;
     background-color: black;
     left: 15px;
-    color: rgb(88, 62, 5);
+    color: rgb(233, 163, 10);
 }
 
 section a:hover,
