@@ -8,7 +8,7 @@ import { useEffect } from "react";
 import ProductCard from "../../Components/Product/ProductCard";
 function Results() {
   const [results, SetResults] = useState([]);
-  console.log(results);
+  // console.log(results);
   const { categoryName } = useParams();
   useEffect(() => {
     axios
