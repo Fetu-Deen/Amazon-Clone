@@ -2,12 +2,15 @@ import { type } from "./action.type";
 
 export const initialState = {
   basket: [],
+  user: null,
 };
 
 export const reducer = (state, action) => {
+  // the reducer fn takes two arguments: the current state and an action, and returns a
   switch (action.type) {
     case type.ADD_TO_BASKET:
       //Check if the item exists
+      //e.g if the bag is already there(inside the basket implies item.id=1) when the "AddtoCart" is clicked, then action.item.id=1 i.e item.id===action.item.id=1
       const existingItem = state.basket.find(
         (item) => item.id === action.item.id
       );
@@ -17,9 +20,10 @@ export const reducer = (state, action) => {
           basket: [...state.basket, { ...action.item, amount: 1 }],
         };
       } else {
+        //i.e if the item already exists inside the basket:
         const updatedBasket = state.basket.map((item) => {
           return item.id === action.item.id
-            ? { ...item, amount: item.amount + 1 }
+            ? { ...item, amount: item.amount + 1 } //keep the item as it's except the amount(+1)
             : item;
         });
         return {
@@ -43,9 +47,14 @@ export const reducer = (state, action) => {
       }
       return {
         ...state,
-        basket: newBasket,  
+        basket: newBasket,
       };
 
+    case type.SET_USER:
+      return {
+        ...state,
+        user: action.user,
+      };
     default:
       return state;
   }

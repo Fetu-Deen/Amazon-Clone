@@ -7,7 +7,7 @@ function Category() {
     <section className={classes.category__container}>
       {categoryInfos.map((infos) => {
         // console.log(infos)
-        return <CategoryCard data={infos} />;
+        return <CategoryCard categoryData={infos} />;
       })}
     </section>
   );

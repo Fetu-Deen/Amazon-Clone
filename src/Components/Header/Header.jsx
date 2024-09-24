@@ -6,9 +6,10 @@ import { FaLocationDot } from "react-icons/fa6";
 import LowerHeader from "./LowerHeader";
 import { Link } from "react-router-dom";
 import { DataContext } from "../DataProvider/DataProvider";
+import { auth } from "../../Utility/firebase";
 
 function Header() {
-  const [{ basket }, dispatch] = useContext(DataContext);
+  const [{ user, basket }, dispatch] = useContext(DataContext);
   const totalItem = basket?.reduce((amount, item) => {
     return item.amount + amount;
   }, 0);
@@ -43,7 +44,7 @@ function Header() {
               <option value="">All</option>
             </select>
             <input type="text" name="" id="" placeholder="search product" />
-            <FaSearch size={25} />
+            <FaSearch size={38} />
           </div>
           {/* Right side link */}
           <div className={classes.order__container}>
@@ -56,10 +57,19 @@ function Header() {
                 <option value="">EN </option>
               </select>
             </Link>
-            <Link to="/auth">
+            <Link to={!user && "/auth"}>
               <div>
-                <p>Sign In</p>
-                <span>Account and Lists</span>
+                {user ? (
+                  <>
+                    <h5>Hello, {user?.email?.split("@")[0]}</h5>
+                    <span onClick={() => auth.signOut()}>Sign Out</span>
+                  </>
+                ) : (
+                  <>
+                    <h5>Hello, Sign In</h5>
+                    <span>Account and Lists</span>
+                  </>
+                )}
               </div>
             </Link>
             {/* Orders */}
