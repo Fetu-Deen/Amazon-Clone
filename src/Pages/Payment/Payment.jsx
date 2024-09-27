@@ -5,6 +5,7 @@ import { DataContext } from "../../Components/DataProvider/DataProvider";
 import ProductCard from "../../Components/Product/ProductCard";
 import { useStripe, useElements, CardElement } from "@stripe/react-stripe-js";
 import CurrencyFormat from "../../Components/CurrencyFormat/CurrencyFormat";
+import { axiosInstance } from "../../API/axios";
 
 function Payment() {
   const stripe = useStripe();
@@ -26,6 +27,37 @@ function Payment() {
     // console.log(e)
     e?.error?.message ? setCardError(e?.error?.message) : setCardError("");
   };
+
+  const handlePayment = async (e) => {
+    e.preventDefault();
+    //Step 1 ---> Client's secret code
+    // Let's go to our back end here || functions ---> to get he client's secret code
+    try {
+      const response = await axiosInstance({
+        method: "POST",
+        url: `/payment/create?total=${total * 100}`,
+      });
+      console.log(response.data);
+      const clientSecret = response.data?.clientSecret;
+
+      // step 2 ---> Confirmation
+      // after we get the client secret for each payment, there should be a confirmation on the client side
+      //React side implementation using stripe
+      const confirmation = await stripe.confirmCardPayment(
+        clientSecret,{
+          payment_method:{
+            card:elements.getElement(CardElement)
+          }
+        }
+      )
+
+    } catch (error) {}
+
+    // step 33 ---> Order page nd empty basket
+    //After confirmation: Order page needed: using a firestore database
+    //Then clear the basket
+  };
+
   return (
     <div>
       <LayOut>
@@ -60,7 +92,7 @@ function Payment() {
             <h3>Payment Methods</h3>
             <div className={classes.payment__card__container}>
               <div className={classes.payment__details}>
-                <form action="">
+                <form onSubmit={handlePayment}>
                   {/* error */}
                   {cardError && (
                     <small style={{ color: "red" }}>{cardError}</small>
@@ -70,11 +102,11 @@ function Payment() {
                   {/* price */}
                   <div className={classes.payment_price}>
                     <div>
-                      <span style={{ display: "flex" , gap:"10px"}}>
+                      <span style={{ display: "flex", gap: "10px" }}>
                         <p>Total Order |</p> <CurrencyFormat amount={total} />
                       </span>
                     </div>
-                    <button>Pay Now</button>
+                    <button type="submit">Pay Now</button>
                   </div>
                 </form>
               </div>
