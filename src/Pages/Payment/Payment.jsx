@@ -6,12 +6,16 @@ import ProductCard from "../../Components/Product/ProductCard";
 import { useStripe, useElements, CardElement } from "@stripe/react-stripe-js";
 import CurrencyFormat from "../../Components/CurrencyFormat/CurrencyFormat";
 import { axiosInstance } from "../../API/axios";
+import { ClipLoader } from "react-spinners";
+import { db } from "../../Utility/firebase";
+import { useNavigate } from "react-router-dom";
+import { type } from "../../Utility/action.type";
 
 function Payment() {
   const stripe = useStripe();
   const elements = useElements();
-
-  const [{ basket, user }] = useContext(DataContext);
+  const navigate = useNavigate();
+  const [{ basket, user }, dispatch] = useContext(DataContext);
 
   const totalItem = basket?.reduce((amount, item) => {
     return item.amount + amount;
@@ -22,6 +26,7 @@ function Payment() {
   }, 0);
 
   const [cardError, setCardError] = useState(null);
+  const [processing, setProcessing] = useState(false);
 
   const handleChange = (e) => {
     // console.log(e)
@@ -31,8 +36,9 @@ function Payment() {
   const handlePayment = async (e) => {
     e.preventDefault();
     //Step 1 ---> Client's secret code
-    // Let's go to our back end here || functions ---> to get he client's secret code
+    // Let's go to our back end here || functions ---> to get the client's secret code
     try {
+      setProcessing(true);
       const response = await axiosInstance({
         method: "POST",
         url: `/payment/create?total=${total * 100}`,
@@ -40,22 +46,39 @@ function Payment() {
       console.log(response.data);
       const clientSecret = response.data?.clientSecret;
 
-      // step 2 ---> Confirmation
+      // step 2 ---> React side Confirmation
       // after we get the client secret for each payment, there should be a confirmation on the client side
       //React side implementation using stripe
-      const confirmation = await stripe.confirmCardPayment(
-        clientSecret,{
-          payment_method:{
-            card:elements.getElement(CardElement)
-          }
-        }
-      )
-
-    } catch (error) {}
-
-    // step 33 ---> Order page nd empty basket
-    //After confirmation: Order page needed: using a firestore database
-    //Then clear the basket
+      const { paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+        payment_method: {
+          card: elements.getElement(CardElement),
+        },
+      });
+      // step 3 ---> Order page nd empty basket
+      //After confirmation: Order page needed: using a firestore database
+      //Then clear the basket
+      await db
+        .collection("users")
+        .doc(user.uid)
+        .collection("orders")
+        .doc(paymentIntent.id)
+        .set({
+          basket: basket,
+          amount: paymentIntent.amount,
+          created: paymentIntent.created,
+        });
+      //  Let's empty the basket after payment
+      dispatch({
+        type: type.EMPTY_BASKET,
+      });
+      // console.log(paymentIntent);
+      setProcessing(false);
+      navigate("/orders", { state: { msg: "You have placed a new order" } });
+    } catch (error) {
+      setProcessing(true);
+      console.log(error);
+      setProcessing(false);
+    }
   };
 
   return (
@@ -106,7 +129,16 @@ function Payment() {
                         <p>Total Order |</p> <CurrencyFormat amount={total} />
                       </span>
                     </div>
-                    <button type="submit">Pay Now</button>
+                    <button to={"/orders"} type="submit">
+                      {processing ? (
+                        <div className={classes.loading}>
+                          <ClipLoader color="gray" size={12} />
+                          <p>Please Wait...</p>
+                        </div>
+                      ) : (
+                        "Pay Now"
+                      )}
+                    </button>
                   </div>
                 </form>
               </div>
