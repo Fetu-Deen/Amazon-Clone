@@ -40,8 +40,11 @@ function Auth() {
             user: userInfo.user,
           });
           setLoading({ ...loading, signIn: false });
-          navigate(navStateData?.state.redirect || "/");
-        })
+if (navStateData && navStateData.state && navStateData.state.redirect) {
+  navigate(navStateData.state.redirect);
+} else {
+  navigate("/"); // Fallback to default route
+}        })
         .catch((err) => {
           setError(err.message);
           setLoading({ ...loading, signIn: false });
@@ -56,8 +59,11 @@ function Auth() {
             user: userInfo.user,
           });
           setLoading({ ...loading, signUp: false });
-          navigate(navStateData?.state.redirect || "/");
-        })
+if (navStateData && navStateData.state && navStateData.state.redirect) {
+  navigate(navStateData.state.redirect);
+} else {
+  navigate("/"); // Fallback to default route
+}        })
         .catch((err) => {
           setError(err.message);
           setLoading({ ...loading, signUp: false });
